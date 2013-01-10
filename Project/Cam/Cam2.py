@@ -16,12 +16,12 @@ while(1):
     _,f=CAM.read();
     i=i+1
     print i
-    if ((i % 10 )==0):
+    if ((i % 1 )==0):
         cv2.imshow("Cam",f)
         s="image"+str(i)+".jpg"
-        cv2.imwrite(s,f)
+     #   cv2.imwrite(s,f)
     if(f==None):
         CAM=cv2.VideoCapture(0)
-    time.sleep(0.5)
+    time.sleep(0.1)
     if cv2.waitKey(1)!= -1 :
         break
