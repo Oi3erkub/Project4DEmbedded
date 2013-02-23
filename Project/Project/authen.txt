@@ -1,0 +1,12 @@
+#!/bin/bash
+while true;do
+wget --post-data 'username=s20111212&password=diwvmg7e&realm=Users&tz_offset:420' https://161.246.254.213/dana-na/auth/url_default/login.cgi --no-check-certificate
+rm login.cgi
+sleep 180
+end
+
+ House No :45/7-8 
+Village No: 7
+Sub-district :Ko Khwang
+District:Mueang Chanthaburi 
+Province:Chanthaburi 

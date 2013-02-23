@@ -1,0 +1,144 @@
+package com.android.ui2;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+
+
+
+import android.R.string;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.TextView;
+
+public class UI2Activity extends Activity {
+	ServerSocket ss = null;
+	  String mClientMsg = "";
+	   Thread myCommsThread = null;
+	   protected static final int MSG_ID = 0x1337;
+	   public static final int SERVERPORT = 6000;
+	   
+	private Button buttonlist,buttonaddFamily;  
+	private String namefamily;
+    /** Called when the activity is first created. */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+        buttonlist = (Button) findViewById(R.id.ButtonListFamily);
+        buttonaddFamily = (Button) findViewById(R.id.ButtonAddFamily);
+      
+        namefamily=getIntent().getStringExtra("NameFamily");
+        buttonlist.setText(namefamily);
+        
+        
+       
+        
+        this.myCommsThread = new Thread(new CommsThread());
+	    this.myCommsThread.start();
+        
+        buttonlist.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent golist = new Intent(getApplicationContext(),listfamily.class);
+				golist.putExtra("NameFamily", namefamily);
+				startActivity(golist);
+			
+			}
+		});
+        
+        buttonaddFamily.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent goaddFamily = new Intent(getApplicationContext(),AddFamily.class);
+				
+				goaddFamily.putExtra("NameFamily", namefamily);
+				
+				startActivity(goaddFamily);
+			
+			}
+		});
+    }
+    
+    
+    
+    Handler myUpdateHandler = new Handler() {
+	    public void handleMessage(Message msg) {
+	        switch (msg.what) {
+	        case MSG_ID:
+	          //  TextView tv = (TextView) findViewById(R.id.TextView01);
+	            buttonlist.setText(mClientMsg);
+	         //   tv.setText(mClientMsg);
+	            break;
+	        default:
+	            break;
+	        }
+	        super.handleMessage(msg);
+	    }
+    };
+    
+    class CommsThread implements Runnable {
+	    public void run() {
+	        Socket s = null;
+	        int i=0;
+	        try {
+	            ss = new ServerSocket(SERVERPORT );
+	            Message m = new Message();
+	            m.what = MSG_ID;
+	            String ps = "Bind";
+	            mClientMsg = ps;
+                myUpdateHandler.sendMessage(m);
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	            Message m = new Message();
+	            m.what = MSG_ID;
+	            String ps = "no Bind";
+	            mClientMsg = ps;
+                myUpdateHandler.sendMessage(m);
+	        }
+	        while (!Thread.currentThread().isInterrupted()) {
+	            Message m = new Message();
+	            m.what = MSG_ID;
+	            try {
+	                if (s == null){
+	                	s = ss.accept();
+	                    mClientMsg = "accecpt";
+		                myUpdateHandler.sendMessage(m);
+	                }
+	                BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
+	                String st = null;
+	                st = input.readLine();
+	                if (st == null){
+	                	mClientMsg = "Resicve Error";
+	 	                myUpdateHandler.sendMessage(m);
+	                	break;
+	                }
+	                mClientMsg = "Resicve"+String.valueOf(i)+st;
+	                myUpdateHandler.sendMessage(m);
+	                i= i +1;
+	            } catch (IOException e) {
+	                e.printStackTrace();
+	                mClientMsg = "Exit";
+	                myUpdateHandler.sendMessage(m);
+	            }
+	        }
+	    }
+    	}
+    }
+
+
+    
+ 
